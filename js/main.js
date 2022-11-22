@@ -1,13 +1,13 @@
 (function(){
 var attrArray = ["AGE_5", "AGE_25", "AGE_45", "AGE_65", "AGE_85"];
-var expressed = attrArray[0];
+var expressed = attrArray[1];
     
 //chart frame dimensions
 var chartWidth = window.innerWidth * 0.425,
     chartHeight = 473,
-    leftPadding = 25,
-    rightPadding = 2,
-    topBottomPadding = 5,
+    leftPadding = 40,
+    rightPadding = 5,
+    topBottomPadding = 1,
     chartInnerWidth = chartWidth - leftPadding - rightPadding,
     chartInnerHeight = chartHeight - topBottomPadding * 2,
     translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
@@ -100,6 +100,9 @@ function setMap(){
 
         // dropdown menue for age selection
         createDropdown(csvData);
+        
+        //making the label
+        setLabel(csvData)
 
     }
 }; //end of setMap()
@@ -125,9 +128,9 @@ function joinData(italyRegions, csvData){
                     var val = parseFloat(csvRegion[attr]);
                     geojsonProps[attr] = val;
                 });
-            }
-        }
-    }
+            };
+        };
+    };
 
 
     return italyRegions;
@@ -174,20 +177,20 @@ function choropleth(props, colorScale){
     };
 };
 
-
+//this is changing the data presentation as the attribute selection changes
 function setEnumerationUnits(italyRegions, map, path, colorScale){
     var regions = map.selectAll(".regions")
         .data(italyRegions)
         .enter()
         .append("path")
         .attr("class", function(d){
-            return "regions " + d.properties.NAME_1;
+            return "regions " + d.properties.ID_1;
         })
         .attr("d", path)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale);
         })
-    //adding mouseover functionality for ease with labellign
+        //adding mouseover functionality for data retrieval
         .on("mouseover", function(d){
             highlight(d.properties);
         })
@@ -201,6 +204,7 @@ function setEnumerationUnits(italyRegions, map, path, colorScale){
 };
 
 //creates the chart off to the side
+
 function setChart(csvData, colorScale){
 
     //svg element to hold the bar chart
@@ -227,8 +231,9 @@ function setChart(csvData, colorScale){
             return b[expressed]-a[expressed]
         })
         .attr("class", function(d){
-            return "bar " + d.NAME_1;
+            return "bar " + d.ID_1;
         })
+    //mouseover capabilities
         .attr("width", chartInnerWidth / csvData.length - 1)
         .on("mouseover", highlight)
         .on("mouseout", dehighlight)
@@ -261,7 +266,29 @@ function setChart(csvData, colorScale){
         .attr("width", chartInnerWidth)
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
-
+    
+        //annotate bars with attribute value text
+    var numbers = chart.selectAll(".numbers")
+        .data(csvData)
+        .enter()
+        .append("text")
+        .sort(function(a, b){
+            return a[expressed]-b[expressed]
+        })
+        .attr("class", function(d){
+            return "numbers " + d.ID_1;
+        })
+        .attr("text-anchor", "middle")
+        .attr("x", function(d, i){
+            var fraction = chartWidth / csvData.length;
+            return i * fraction + (fraction - 1) / 2;
+        })
+        .attr("y", function(d){
+            return chartHeight - yScale(parseFloat(d[expressed])) + 15;
+        })
+        .text(function(d){
+            return d[expressed];
+        });
     //set bar positions, heights, and colors
     updateChart(bars, csvData.length, colorScale);
 };
@@ -279,7 +306,7 @@ function createDropdown(csvData){
     var titleOption = dropdown.append("option")
         .attr("class", "titleOption")
         .attr("disabled", "true")
-        .text("Select Attribute");
+        .text("Select Age");
 
     //add attribute name options
     var attrOptions = dropdown.selectAll("attrOptions")
@@ -366,19 +393,23 @@ function updateChart(bars, n, colorScale){
 };
 
     
-//The spot with the most errors    
     
-//function to highlight enumeration units and bars
+    
+//The spot with the most errors    
+//Everthing that deals with hovering the mouse and labels
+
+
+//function to highlight regions and bars
 function highlight(props){
-    //change stroke
+    //change stroke to white
     var selected = d3.selectAll("." + props.ID_1)
-        .style("stroke", "blue")
-        .style("stroke-width", "2");
+        .style("stroke", "white")
+        .style("stroke-width", "3");
     
     setLabel(props);
 };
 
-//function to reset the element style on mouseout
+//function to revert stroke after moving mouse out
 function dehighlight(props){
     var selected = d3.selectAll("." + props.ID_1)
         .style("stroke", function(){
@@ -388,7 +419,7 @@ function dehighlight(props){
             return getStyle(this, "stroke-width")
         });
     
-    //below Example 2.4 line 21...remove info label
+    //remove info label
     d3.select(".infolabel")
         .remove();
 
@@ -404,25 +435,24 @@ function dehighlight(props){
 };
 
 //function to create dynamic label
-function setLabel(properties){
+function setLabel(props){
     //label content
-    var labelAttribute = "<h1>" + properties[expressed] +
-        "</h1><b>" + expressed + "</b>";
+    var labelAttribute = "<h1>" + props[expressed] +
+        "</h1><b>" + expressed + "</b>"; //should be the population count 
 
     //create info label div
     var infolabel = d3.select("body")
         .append("div")
         .attr("class", "infolabel")
-        .attr("id", properties.NAME_1 + "_label")
+        .attr("id", props.ID_1 + "_label")
         .html(labelAttribute);
 
     var regionName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(properties.name);
+        .html(props.NAME_1); //region name
 };
 
 //function to move info label with mouse
-
 function moveLabel(){
     //get width of label
     var labelWidth = d3.select(".infolabel")
@@ -432,13 +462,13 @@ function moveLabel(){
 
     //use coordinates of mousemove event to set label coordinates
     var x1 = d3.event.clientX + 10,
-        y1 = d3.event.clientY - 75,
+        y1 = d3.event.clientY + 85,
         x2 = d3.event.clientX - labelWidth - 10,
         y2 = d3.event.clientY + 25;
 
-    //horizontal label coordinate, testing for overflow
+    //horizontal label coordinate boundary
     var x = d3.event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
-    //vertical label coordinate, testing for overflow
+    //vertical label coordinate boundary
     var y = d3.event.clientY < 75 ? y2 : y1; 
 
     d3.select(".infolabel")
@@ -446,4 +476,6 @@ function moveLabel(){
         .style("top", y + "px");
 };
 
+
+    
 })();

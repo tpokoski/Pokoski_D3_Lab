@@ -7,6 +7,7 @@
 
 		<!--put your external stylesheet links here-->
 		<link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
 		<!--[if IE<9]>
 			<link rel="stylesheet" href="css/style.ie.css">
 		<![endif]-->
@@ -14,12 +15,22 @@
 
 	<body>
 		<!--put your initial page content here-->
-			
+        <div class="jumbotron">
+			<div class="container">
+            <div class="jumbotron text-center">
+				<h1 class = "display-4">Ages across Italian Regions</h1>
+				<p class = "lead">Italy's census provides very descriptive counts of their population, and counts year of age, not just age range. This isn't really helpful in trying to draw correlations with the current dataset displayed below, but if all ages were included, it could be more interesting. By including ages of all people in the country, you could see birth rate trends and life expectancy trends more easily. Even with this limited data, it can be seen that the age of Italy skews higher than 25 for example. Might also be useful for parents, seeing where there are many kids the same age as theirs, so that they can find populated schools. Or on the other end of the spectrum, retirees finding communities of people the same age as them. </p>
+                <p>Sources: TopoJSON from <a href="https://github.com/deldersveld/topojson">Deldersveld's</a> TopoJSON Collection and <a href = "https://www.istat.it/en/population-and-households">ISTAT:</a> Istituto Nazionale di Statistica</p>
+                <hr class = "my-4">
+			</div>
+            </div>
+		</div>
 		<!--you can also use this space for internal scripts or stylesheets;
 		place these within <script> or <style> tags-->
 
 		<!--put your external script links here-->
         <script type="text/javascript" src="lib/d3.js"></script>
+        <script type="text/javascript" src="lib/d3-selection-multi.min.js"></script>
         <script type="text/javascript" src="lib/topojson.min.js"></script>
         <script type="text/javascript" src="lib/jquery-3.6.1.min.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
