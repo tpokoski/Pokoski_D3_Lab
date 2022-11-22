@@ -1,6 +1,6 @@
 (function(){
 var attrArray = ["AGE_5", "AGE_25", "AGE_45", "AGE_65", "AGE_85"];
-var expressed = attrArray[1];
+var expressed = attrArray[0];
     
 //chart frame dimensions
 var chartWidth = window.innerWidth * 0.425,
@@ -184,17 +184,17 @@ function setEnumerationUnits(italyRegions, map, path, colorScale){
         .enter()
         .append("path")
         .attr("class", function(d){
-            return "regions " + d.properties.ID_1;
+            return "regions r" + d.properties.ID_1;
         })
         .attr("d", path)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale);
         })
         //adding mouseover functionality for data retrieval
-        .on("mouseover", function(d){
+        .on("mouseover", function(event, d){
             highlight(d.properties);
         })
-        .on("mouseout", function(d){
+        .on("mouseout", function(event, d){
             dehighlight(d.properties);
         })
         .on("mousemove", moveLabel);
@@ -231,14 +231,14 @@ function setChart(csvData, colorScale){
             return b[expressed]-a[expressed]
         })
         .attr("class", function(d){
-            return "bar " + d.ID_1;
+            return "bar r" + d.ID_1;
         })
     //mouseover capabilities
         .attr("width", chartInnerWidth / csvData.length - 1)
+        //adding mouseover functionality for data retrieval
         .on("mouseover", highlight)
         .on("mouseout", dehighlight)
         .on("mousemove", moveLabel);
-
 
     var desc = bars.append("desc")
     .text('{"stroke": "none", "stroke-width": "0px"}');
@@ -402,7 +402,7 @@ function updateChart(bars, n, colorScale){
 //function to highlight regions and bars
 function highlight(props){
     //change stroke to white
-    var selected = d3.selectAll("." + props.ID_1)
+    var selected = d3.selectAll(".r" + props.ID_1)
         .style("stroke", "white")
         .style("stroke-width", "3");
     
@@ -411,7 +411,7 @@ function highlight(props){
 
 //function to revert stroke after moving mouse out
 function dehighlight(props){
-    var selected = d3.selectAll("." + props.ID_1)
+    var selected = d3.selectAll(".r" + props.ID_1)
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
@@ -437,7 +437,7 @@ function dehighlight(props){
 //function to create dynamic label
 function setLabel(props){
     //label content
-    var labelAttribute = "<h1>" + props[expressed] +
+    var labelAttribute = "<h1>" + ".r" + props[expressed] +
         "</h1><b>" + expressed + "</b>"; //should be the population count 
 
     //create info label div
@@ -449,10 +449,11 @@ function setLabel(props){
 
     var regionName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.NAME_1); //region name
+        .html(".r"+props.NAME_1); //region name
 };
 
 //function to move info label with mouse
+// THis part isn't working, and thus doesn't trigger the labels
 function moveLabel(){
     //get width of label
     var labelWidth = d3.select(".infolabel")
@@ -461,6 +462,7 @@ function moveLabel(){
         .width;
 
     //use coordinates of mousemove event to set label coordinates
+    //getting a ClientX error, but not a clientY? probably just didn't think that far along
     var x1 = d3.event.clientX + 10,
         y1 = d3.event.clientY + 85,
         x2 = d3.event.clientX - labelWidth - 10,
