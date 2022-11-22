@@ -1,9 +1,7 @@
 (function(){
-
-//My list of attributes for the drop down
-var attrArray = ["Age 5", "Age 25", "Age 45", "Age 65", "Age 85"];
+var attrArray = ["AGE_5", "AGE_25", "AGE_45", "AGE_65", "AGE_85"];
 var expressed = attrArray[0];
-
+    
 //chart frame dimensions
 var chartWidth = window.innerWidth * 0.425,
     chartHeight = 473,
@@ -52,7 +50,7 @@ function setMap(){
     var promises = [];
         promises.push(d3.csv("data/italyData.csv")); //all age data from csv
         promises.push(d3.json("data/EuropeCountries.topojson")); //background countries
-        promises.push(d3.json("data/ITregions.topojson")); //the italy region data
+        promises.push(d3.json("data/ItalyRegions.topojson")); //the italy region data
         Promise.all(promises).then(callback);
    
     function callback(data){
@@ -78,7 +76,7 @@ function setMap(){
         
         //translate europe TopoJSON and italy topoJSON
         var europeCountries = topojson.feature(europe, europe.objects.EuropeCountries);
-        var italyRegions = topojson.feature(italy, italy.objects.ITA_adm1).features;
+        var italyRegions = topojson.feature(italy, italy.objects.collection).features;
         
         //add Europe countries to map
         var countries = map.append("path")
@@ -86,6 +84,8 @@ function setMap(){
             .attr("class", "countries")
             .attr("d", path);
         
+        
+
         //join csv data to GeoJSON enumeration units
         italyRegions = joinData(italyRegions, csvData);
 
@@ -266,7 +266,6 @@ function setChart(csvData, colorScale){
     updateChart(bars, csvData.length, colorScale);
 };
 
-//Example 1.1 line 1...function to create a dropdown menu for attribute selection
 function createDropdown(csvData){
     //add select element
     var dropdown = d3.select("body")
@@ -363,13 +362,16 @@ function updateChart(bars, n, colorScale){
     
     //add text to chart title
     var chartTitle = d3.select(".chartTitle")
-        .text("Number of Variable " + expressed[3] + " in each region");
+        .text("Number of people aged " + expressed[4]+ expressed[5] + " in each region");
 };
 
+    
+//The spot with the most errors    
+    
 //function to highlight enumeration units and bars
 function highlight(props){
     //change stroke
-    var selected = d3.selectAll("." + props.ITA_adm1)
+    var selected = d3.selectAll("." + props.ID_1)
         .style("stroke", "blue")
         .style("stroke-width", "2");
     
@@ -378,7 +380,7 @@ function highlight(props){
 
 //function to reset the element style on mouseout
 function dehighlight(props){
-    var selected = d3.selectAll("." + props.NAME_1)
+    var selected = d3.selectAll("." + props.ID_1)
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
@@ -402,21 +404,21 @@ function dehighlight(props){
 };
 
 //function to create dynamic label
-function setLabel(props){
+function setLabel(properties){
     //label content
-    var labelAttribute = "<h1>" + props[expressed] +
+    var labelAttribute = "<h1>" + properties[expressed] +
         "</h1><b>" + expressed + "</b>";
 
     //create info label div
     var infolabel = d3.select("body")
         .append("div")
         .attr("class", "infolabel")
-        .attr("id", props.NAME_1 + "_label")
+        .attr("id", properties.NAME_1 + "_label")
         .html(labelAttribute);
 
     var regionName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.name);
+        .html(properties.name);
 };
 
 //function to move info label with mouse
